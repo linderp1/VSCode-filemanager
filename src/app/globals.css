@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface text-slate-200 antialiased;
+}
+
+/* Thin, unobtrusive scrollbars to match the dark UI. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2d3342 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #2d3342;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}

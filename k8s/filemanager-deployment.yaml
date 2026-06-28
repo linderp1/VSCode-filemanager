@@ -1,0 +1,113 @@
+# Longhorn File Browser — k3s deployment
+#
+# Apply with:   kubectl apply -f k8s/filemanager-deployment.yaml
+#
+# Prerequisites:
+#   * A shared ReadWriteMany PVC named "longhorn-shared" exists in this namespace.
+#     (See the commented sample PVC at the bottom if you need to create one.)
+#   * The GHCR package ghcr.io/linderp1/vscode-filemanager is PUBLIC, so no
+#     imagePullSecret is required.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filemanager
+  labels:
+    app: filemanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filemanager
+  template:
+    metadata:
+      labels:
+        app: filemanager
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: filemanager
+          image: ghcr.io/linderp1/vscode-filemanager:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: DATA_ROOT
+              value: /data
+          volumeMounts:
+            - name: data
+              mountPath: /data
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: longhorn-shared
+            readOnly: true
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filemanager
+  labels:
+    app: filemanager
+  # To request a specific MetalLB address, uncomment:
+  # annotations:
+  #   metallb.universe.tf/loadBalancerIPs: 192.168.1.240
+spec:
+  type: LoadBalancer
+  selector:
+    app: filemanager
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+# -----------------------------------------------------------------------------
+# Sample shared volume (uncomment and apply if you don't already have one).
+# Longhorn supports ReadWriteMany when its NFS-based RWX feature is enabled.
+# -----------------------------------------------------------------------------
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: longhorn-shared
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClassName: longhorn
+#   resources:
+#     requests:
+#       storage: 20Gi

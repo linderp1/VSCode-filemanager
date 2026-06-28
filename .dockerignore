@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.github
+*.md
+!README.md
+sample
+.DS_Store
+npm-debug.log*
+.env*
+Dockerfile
+.dockerignore
+k8s
