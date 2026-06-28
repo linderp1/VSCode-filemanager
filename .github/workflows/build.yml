@@ -40,7 +40,7 @@ jobs:
           # Lowercase repo name required for GHCR image references.
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/vscode-filemanager
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=ref,event=tag
             type=sha,format=short
 
