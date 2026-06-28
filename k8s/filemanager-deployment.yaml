@@ -2,16 +2,26 @@
 #
 # Apply with:   kubectl apply -f k8s/filemanager-deployment.yaml
 #
+# Everything is deployed into the "filemanager" namespace (created below).
+#
 # Prerequisites:
-#   * A shared ReadWriteMany PVC named "longhorn-shared" exists in this namespace.
-#     (See the commented sample PVC at the bottom if you need to create one.)
+#   * A shared ReadWriteMany PVC named "longhorn-shared" exists in the
+#     "filemanager" namespace. (See the commented sample PVC at the bottom.)
 #   * The GHCR package ghcr.io/linderp1/vscode-filemanager is PUBLIC, so no
 #     imagePullSecret is required.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: filemanager
+  labels:
+    app: filemanager
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: filemanager
+  namespace: filemanager
   labels:
     app: filemanager
 spec:
@@ -81,6 +91,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: filemanager
+  namespace: filemanager
   labels:
     app: filemanager
   # To request a specific MetalLB address, uncomment:
@@ -104,6 +115,7 @@ spec:
 # kind: PersistentVolumeClaim
 # metadata:
 #   name: longhorn-shared
+#   namespace: filemanager
 # spec:
 #   accessModes:
 #     - ReadWriteMany

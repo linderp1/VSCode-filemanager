@@ -76,8 +76,10 @@ docker run --rm -p 3000:3000 -v "$PWD/sample:/data:ro" filemanager:dev
 
 ## Deploy to k3s
 
-1. Ensure a `ReadWriteMany` PVC named `longhorn-shared` exists (a sample is
-   included, commented, in the manifest).
+Everything is deployed into the `filemanager` namespace (created by the manifest).
+
+1. Ensure a `ReadWriteMany` PVC named `longhorn-shared` exists in the
+   `filemanager` namespace (a sample is included, commented, in the manifest).
 2. Apply:
 
    ```bash
@@ -87,7 +89,7 @@ docker run --rm -p 3000:3000 -v "$PWD/sample:/data:ro" filemanager:dev
 3. Find the MetalLB-assigned IP and open it:
 
    ```bash
-   kubectl get svc filemanager
+   kubectl get svc filemanager -n filemanager
    ```
 
 To pin a specific MetalLB address, set the
