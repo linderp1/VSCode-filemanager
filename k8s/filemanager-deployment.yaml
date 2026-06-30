@@ -98,12 +98,10 @@ metadata:
   labels:
     app: filemanager
   annotations:
-    # MetalLB 0.13+ honors this annotation; spec.loadBalancerIP below is
-    # deprecated (k8s 1.24+) but kept for compatibility with older setups.
+    # MetalLB 0.13+ honors this annotation to assign a fixed address.
     metallb.universe.tf/loadBalancerIPs: 192.168.2.233
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.2.233
   selector:
     app: filemanager
   ports:
