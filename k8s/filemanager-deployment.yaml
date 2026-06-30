@@ -2,11 +2,14 @@
 #
 # Apply with:   kubectl apply -f k8s/filemanager-deployment.yaml
 #
-# Everything is deployed into the "filemanager" namespace (created below).
+# Everything is deployed into the "filemanager" namespace (created below),
+# including the Longhorn PVC that backs the browser — a single
+# `kubectl apply` provisions the namespace, volume, Deployment and Service.
 #
 # Prerequisites:
-#   * A shared ReadWriteMany PVC named "longhorn-shared" exists in the
-#     "filemanager" namespace. (See the commented sample PVC at the bottom.)
+#   * Longhorn is installed with a StorageClass named "longhorn" that supports
+#     ReadWriteMany (RWX). If your class has a different name, edit the PVC's
+#     storageClassName near the bottom of this file.
 #   * The GHCR package ghcr.io/linderp1/vscode-filemanager is PUBLIC, so no
 #     imagePullSecret is required.
 ---
@@ -107,19 +110,22 @@ spec:
       targetPort: http
       protocol: TCP
 # -----------------------------------------------------------------------------
-# Sample shared volume (uncomment and apply if you don't already have one).
-# Longhorn supports ReadWriteMany when its NFS-based RWX feature is enabled.
+# Shared volume backing the browser. Longhorn provisions a volume the moment
+# this PVC is created (ReadWriteMany uses Longhorn's NFS-based RWX support).
+# If your Longhorn StorageClass is not named "longhorn", change storageClassName.
 # -----------------------------------------------------------------------------
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: longhorn-shared
-#   namespace: filemanager
-# spec:
-#   accessModes:
-#     - ReadWriteMany
-#   storageClassName: longhorn
-#   resources:
-#     requests:
-#       storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-shared
+  namespace: filemanager
+  labels:
+    app: filemanager
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi

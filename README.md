@@ -76,21 +76,22 @@ docker run --rm -p 3000:3000 -v "$PWD/sample:/data:ro" filemanager:dev
 
 ## Deploy to k3s
 
-Everything is deployed into the `filemanager` namespace (created by the manifest).
+Everything — namespace, Longhorn PVC, Deployment and Service — is created by the
+manifest, so a single apply provisions the whole stack:
 
-1. Ensure a `ReadWriteMany` PVC named `longhorn-shared` exists in the
-   `filemanager` namespace (a sample is included, commented, in the manifest).
-2. Apply:
+```bash
+kubectl apply -f k8s/filemanager-deployment.yaml
+```
 
-   ```bash
-   kubectl apply -f k8s/filemanager-deployment.yaml
-   ```
+Requirements: Longhorn installed with a `ReadWriteMany`-capable StorageClass named
+`longhorn` (edit `storageClassName` in the manifest if yours differs).
 
-3. Find the MetalLB-assigned IP and open it:
+Watch the pod come up, then find the MetalLB-assigned IP and open it:
 
-   ```bash
-   kubectl get svc filemanager -n filemanager
-   ```
+```bash
+kubectl get pods -n filemanager -w
+kubectl get svc filemanager -n filemanager
+```
 
 To pin a specific MetalLB address, set the
 `metallb.universe.tf/loadBalancerIPs` annotation on the Service (commented in the
